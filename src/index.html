@@ -28,51 +28,61 @@
       body,
       html {
         height: 100%;
+        overflow: hidden;
       }
       body {
+        position: relative;
         background-color: #000000;
         color: #ffffff;
+        text-align: center;
+        user-select: none;
       }
       h1 {
         font-family: "Playfair Display";
-        font-size: 30px;
         padding: 10px 0px;
         margin: 0px;
       }
+      .gameTitle {
+        padding-top: 35px;
+        font-size: 20px;
+      }
       .field-box {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
         border: 2px solid #d0d0d0;
-        float: left;
       }
       .field {
         position: relative;
-        width: 1024px;
-        height: 640px;
+        width: 1000px;
+        height: 600px;
       }
-      .field .tile {
+      .field .tileB {
         position: absolute;
         width: 50px;
         height: 50px;
         background-size: 100%;
-        background-image: url(images/tile-.png);
+        background-image: url(/src/images/tile-B.png);
         z-index: 5;
       }
       .field .tileW {
-        background-image: url(images/tile-W.png);
+        background-image: url(/src/images/tile-W.png);
       }
       .field .tileE {
-        background-image: url(images/tile-E.png);
+        background-image: url(/src/images/tile-E.png);
         z-index: 10;
       }
       .field .tileP {
-        background-image: url(images/tile-P.png);
+        background-image: url(/src/images/tile-P.png);
         z-index: 10;
       }
       .field .tileHP {
-        background-image: url(images/tile-HP.png);
+        background-image: url(/src/images/tile-HP.png);
         z-index: 9;
       }
       .field .tileSW {
-        background-image: url(images/tile-SW.png);
+        background-image: url(/src/images/tile-SW.png);
         z-index: 9;
       }
       .field .tile .health {
@@ -107,14 +117,17 @@
     </style>
   </head>
   <body>
-    <h1>Игровое поле</h1>
-    <div class="field-box"><div class="field"></div></div>
+    <div class="gameTitle"><h1>Rogalik Game</h1></div>
+    <div class="field-box">
+      <div class="field" id="field"></div>
+    </div>
     <div class="cl"></div>
     <!--h1>Инвентарь</h1>
 		<div class="inventory-box"><div class="inventory"></div></div-->
 
+    <script src="scripts/utils.js"></script>
     <script>
-      let game = new Game();
+      var game = new App.Game();
       game.init();
     </script>
   </body>
