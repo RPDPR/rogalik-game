@@ -6,17 +6,49 @@ App.Game = function () {
 
 App.Game.prototype.init = function () {
   this.lastFrameTime;
+  this.lastMoveTime;
   this.gameField = document.querySelector(".field");
 
-  var res = createField(this.gameField);
+  // field sizes ////
+  this.widthTileQuantity = 40;
+  this.heightTileQuantity = 24;
 
-  this.tileArray = res.tileArray;
-  this.wallTileArray = res.wallTileArray;
-  this.baseTileArray = res.baseTileArray;
-  this.potions = res.potionsGlobal;
-  this.swords = res.swordsGlobal;
-  this.enemies = res.enemiesGlobal;
-  this.player = res.playerGlobal;
+  // tiles values /////
+  this.tileStates = tileStates || {};
+
+  // tiles classes /////
+  this.tileClasses = tileClasses || {};
+
+  var dd = createField(
+    this.gameField,
+    this.tileClasses,
+    this.widthTileQuantity,
+    this.heightTileQuantity
+  );
+
+  // dom data /////
+  this.domData = {
+    tileClasses: this.tileClasses,
+    widthTileQuantity: this.widthTileQuantity,
+    heightTileQuantity: this.heightTileQuantity,
+    tileArray: dd.tileArray,
+    wallArray: dd.wallArray,
+    baseArray: dd.baseArray,
+    potions: dd.potionsGlobal,
+    swords: dd.swordsGlobal,
+    enemies: dd.enemiesGlobal,
+    player: dd.playerGlobal,
+  };
+
+  var gd = buildGame(this.domData.tileArray, this.domData.tileClasses);
+
+  // gameData /////
+  this.gameData = {
+    tileStates: this.tileStates,
+    widthTileQuantity: this.widthTileQuantity,
+    heightTileQuantity: this.heightTileQuantity,
+    state: gd,
+  };
 
   // user pressed keys state /////
   this.keys = [];
@@ -33,13 +65,13 @@ App.Game.prototype.init = function () {
 };
 
 App.Game.prototype.gameLoop = function () {
-  const now = performance.now();
-  const fps = 5;
-  const interval = 1000 / fps;
+  var now = performance.now();
+  var fps = 30;
+  var interval = 1000 / fps;
 
   if (!this.lastFrameTime) this.lastFrameTime = now;
 
-  const delta = now - this.lastFrameTime;
+  var delta = now - this.lastFrameTime;
 
   if (delta >= interval) {
     this.lastFrameTime = now - (delta % interval);
@@ -50,20 +82,39 @@ App.Game.prototype.gameLoop = function () {
   requestAnimationFrame(this.gameLoop);
 };
 
-App.Game.prototype.render = function () {};
+App.Game.prototype.render = function () {
+  clearGameField(this.domData.tileArray, this.domData.tileClasses);
+  updateGameField(
+    this.domData.tileArray,
+    this.gameData.state,
+    this.domData.tileClasses,
+    this.gameData.tileStates
+  );
+};
 
 App.Game.prototype.update = function () {
+  var moveInterval = 300;
+  if (!this.lastMoveTime) this.lastMoveTime = performance.now();
+
+  var now = performance.now();
+  if (now - this.lastMoveTime < moveInterval) {
+    return;
+  }
+  this.lastMoveTime = now;
+
   // movement /////
   if (this.keys["w"]) {
-    playerMovement("w");
+    playerMovement("w", this.gameData);
   }
   if (this.keys["a"]) {
-    playerMovement("a");
+    playerMovement("a", this.gameData);
   }
   if (this.keys["s"]) {
-    playerMovement("s");
+    playerMovement("s", this.gameData);
   }
   if (this.keys["d"]) {
-    playerMovement("d");
+    playerMovement("d", this.gameData);
   }
+
+  // enemy movement /////
 };

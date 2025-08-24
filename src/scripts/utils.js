@@ -1,5 +1,14 @@
+function findIndexOfElement(arr, predicate) {
+  for (var i = 0; i < arr.length; i++) {
+    if (predicate(arr[i], i, arr)) {
+      return i;
+    }
+  }
+  return -1;
+}
+
 function iterateByWidth(tileArray, WTQ, HTQ, callback) {
-  for (let i = 0, h = 1, w = 1; i < tileArray.length; i++, w++) {
+  for (var i = 0, h = 1, w = 1; i < tileArray.length; i++, w++) {
     if (i % WTQ === 0 && i !== 0) {
       h++;
       w = 1;
@@ -9,15 +18,129 @@ function iterateByWidth(tileArray, WTQ, HTQ, callback) {
 }
 
 function iterateByHeight(tileArray, WTQ, HTQ, callback) {
-  for (let w = 1; w <= WTQ; w++) {
-    for (let h = 1; h <= HTQ; h++) {
-      const i = (h - 1) * WTQ + (w - 1);
+  for (var w = 1; w <= WTQ; w++) {
+    for (var h = 1; h <= HTQ; h++) {
+      var i = (h - 1) * WTQ + (w - 1);
       callback(tileArray[i], i, w, h);
     }
   }
 }
 
-function createRooms(tileArray, widthTileQuantity, heightTileQuantity) {
+function getEdgeTilesInDom(tileArray, WTQ, HTQ) {
+  var edges = [];
+
+  for (var w = 0; w < WTQ; w++) {
+    edges.push(tileArray[w]);
+  }
+
+  for (var h = 1; h < HTQ - 1; h++) {
+    edges.push(tileArray[h * WTQ + (WTQ - 1)]);
+  }
+
+  for (var w = WTQ * (HTQ - 1); w < WTQ * HTQ; w++) {
+    edges.push(tileArray[w]);
+  }
+
+  for (var h = HTQ - 2; h > 0; h--) {
+    edges.push(tileArray[h * WTQ]);
+  }
+
+  return edges;
+}
+
+function getEdgeTiles(WTQ, HTQ) {
+  var edges = [];
+
+  for (var w = 0; w < WTQ; w++) {
+    edges.push(w);
+  }
+
+  for (var h = 1; h < HTQ - 1; h++) {
+    edges.push(h * WTQ + (WTQ - 1));
+  }
+
+  for (var w = WTQ * (HTQ - 1); w < WTQ * HTQ; w++) {
+    edges.push(w);
+  }
+
+  for (var h = HTQ - 2; h > 0; h--) {
+    edges.push(h * WTQ);
+  }
+
+  return edges;
+}
+
+function getNearestTile(stateArray, WTQ, HTQ, entityIndex, direction) {
+  var nearestTileIndex;
+  var edgeTileIndices = getEdgeTiles(WTQ, HTQ);
+
+  var isEntityEdge = edgeTileIndices.indexOf(entityIndex) !== -1;
+
+  switch (direction) {
+    case "up":
+      if (entityIndex < WTQ) return undefined;
+      nearestTileIndex = entityIndex - WTQ;
+      break;
+    case "down":
+      if (entityIndex >= stateArray.length - WTQ) return undefined;
+      nearestTileIndex = entityIndex + WTQ;
+      break;
+    case "right":
+      if ((entityIndex + 1) % WTQ === 0) return undefined;
+      nearestTileIndex = entityIndex + 1;
+      break;
+    case "left":
+      if (entityIndex % WTQ === 0) return undefined;
+      nearestTileIndex = entityIndex - 1;
+      break;
+  }
+
+  return nearestTileIndex;
+}
+
+// function getNearestTile(tileArray, WTQ, HTQ, entity, direction) {
+//   var nearestTile;
+//   var entityIndex = findIndexOfElement(tileArray, function (el) {
+//     return el == entity;
+//   });
+//   var edgeTilesArray = getEdgeTiles(tileArray, WTQ, HTQ);
+//   var isEntityAnEdgeTile = edgeTilesArray.indexOf(entity) != -1;
+
+//   switch (direction) {
+//     case "up":
+//       if (isEntityAnEdgeTile && tileArray[entityIndex - WTQ] == -1) {
+//         return undefined;
+//       }
+//       nearestTile = tileArray[entityIndex - WTQ];
+//       break;
+//     case "down":
+//       if (isEntityAnEdgeTile && tileArray[entityIndex + WTQ] == -1) {
+//         return undefined;
+//       }
+//       nearestTile = tileArray[entityIndex + WTQ];
+//       break;
+//     case "right":
+//       if ((entityIndex + 1) % WTQ == 0) {
+//         return undefined;
+//       }
+//       nearestTile = tileArray[entityIndex + 1];
+//       break;
+//     case "left":
+//       if (entityIndex % WTQ == 0) {
+//         return undefined;
+//       }
+//       nearestTile = tileArray[entityIndex - 1];
+//       break;
+//   }
+//   return nearestTile;
+// }
+
+function createRooms(
+  tileArray,
+  tileClasses,
+  widthTileQuantity,
+  heightTileQuantity
+) {
   var roomCount = Math.floor(Math.random() * 6) + 5;
   var minRoomSize = 3;
   var maxRoomSize = 8;
@@ -37,7 +160,7 @@ function createRooms(tileArray, widthTileQuantity, heightTileQuantity) {
         var tileIndex = yy * widthTileQuantity + xx;
         var tile = tileArray[tileIndex];
         if (!tile) continue;
-        tile.classList.remove("tileW");
+        tile.classList.remove(tileClasses.wall);
       }
     }
   }
@@ -47,12 +170,12 @@ function createRooms(tileArray, widthTileQuantity, heightTileQuantity) {
       y = y1;
     while (x !== x2) {
       var tileIndex = y * widthTileQuantity + x;
-      tileArray[tileIndex].classList.remove("tileW");
+      tileArray[tileIndex].classList.remove(tileClasses.wall);
       x += x2 > x ? 1 : -1;
     }
     while (y !== y2) {
       var tileIndex = y * widthTileQuantity + x;
-      tileArray[tileIndex].classList.remove("tileW");
+      tileArray[tileIndex].classList.remove(tileClasses.wall);
       y += y2 > y ? 1 : -1;
     }
   }
@@ -86,7 +209,12 @@ function createRooms(tileArray, widthTileQuantity, heightTileQuantity) {
   }
 }
 
-function createPaths(tileArray, widthTileQuantity, heightTileQuantity) {
+function createPaths(
+  tileArray,
+  tileClasses,
+  widthTileQuantity,
+  heightTileQuantity
+) {
   var pathsCountX = Math.floor(Math.random() * 3) + 3;
   var pathsCountY = Math.floor(Math.random() * 3) + 3;
   var widthPaths = [];
@@ -115,11 +243,11 @@ function createPaths(tileArray, widthTileQuantity, heightTileQuantity) {
     heightTileQuantity,
     function (tile, i, w, h) {
       if (widthPaths.indexOf(h) != -1) {
-        if (tileArray[i].classList.contains("tileW")) {
-          tileArray[i].classList.remove("tileW");
+        if (tileArray[i].classList.contains(tileClasses.wall)) {
+          tileArray[i].classList.remove(tileClasses.wall);
         }
-        if (!tileArray[i].classList.contains("tileB")) {
-          tileArray[i].classList.add("tileB");
+        if (!tileArray[i].classList.contains(tileClasses.base)) {
+          tileArray[i].classList.add(tileClasses.base);
         }
       }
     }
@@ -131,18 +259,18 @@ function createPaths(tileArray, widthTileQuantity, heightTileQuantity) {
     heightTileQuantity,
     function (tile, i, w, h) {
       if (heightPaths.indexOf(w) != -1) {
-        if (tileArray[i].classList.contains("tileW")) {
-          tileArray[i].classList.remove("tileW");
+        if (tileArray[i].classList.contains(tileClasses.wall)) {
+          tileArray[i].classList.remove(tileClasses.wall);
         }
-        if (!tileArray[i].classList.contains("tileB")) {
-          tileArray[i].classList.add("tileB");
+        if (!tileArray[i].classList.contains(tileClasses.base)) {
+          tileArray[i].classList.add(tileClasses.base);
         }
       }
     }
   );
 }
 
-function createPotions(tileArray) {
+function createPotions(tileArray, tileClasses) {
   var potionsCount = 10;
   var potionsPlaced = [];
   var potionsGlobal = [];
@@ -153,22 +281,22 @@ function createPotions(tileArray) {
     if (
       potionsPlaced.length >= potionsCount ||
       potionsPlaced.indexOf(randomPlace) != -1 ||
-      tileArray[randomPlace].classList.contains("tileW") ||
-      tileArray[randomPlace].classList.contains("tileE") ||
-      tileArray[randomPlace].classList.contains("tileHP") ||
-      tileArray[randomPlace].classList.contains("tileP") ||
-      tileArray[randomPlace].classList.contains("tileSW")
+      tileArray[randomPlace].classList.contains(tileClasses.wall) ||
+      tileArray[randomPlace].classList.contains(tileClasses.enemy) ||
+      tileArray[randomPlace].classList.contains(tileClasses.potion) ||
+      tileArray[randomPlace].classList.contains(tileClasses.player) ||
+      tileArray[randomPlace].classList.contains(tileClasses.sword)
     ) {
       continue;
     }
     potionsPlaced.push(randomPlace);
-    tileArray[randomPlace].classList.add("tileHP");
+    tileArray[randomPlace].classList.add(tileClasses.potion);
     potionsGlobal.push(tileArray[randomPlace]);
   }
   return potionsGlobal;
 }
 
-function createSwords(tileArray) {
+function createSwords(tileArray, tileClasses) {
   var swordsCount = 2;
   var swordsPlaced = [];
   var swordsGlobal = [];
@@ -179,22 +307,22 @@ function createSwords(tileArray) {
     if (
       swordsPlaced.length >= swordsCount ||
       swordsPlaced.indexOf(randomPlace) != -1 ||
-      tileArray[randomPlace].classList.contains("tileW") ||
-      tileArray[randomPlace].classList.contains("tileE") ||
-      tileArray[randomPlace].classList.contains("tileHP") ||
-      tileArray[randomPlace].classList.contains("tileP") ||
-      tileArray[randomPlace].classList.contains("tileSW")
+      tileArray[randomPlace].classList.contains(tileClasses.wall) ||
+      tileArray[randomPlace].classList.contains(tileClasses.enemy) ||
+      tileArray[randomPlace].classList.contains(tileClasses.potion) ||
+      tileArray[randomPlace].classList.contains(tileClasses.player) ||
+      tileArray[randomPlace].classList.contains(tileClasses.sword)
     ) {
       continue;
     }
     swordsPlaced.push(randomPlace);
-    tileArray[randomPlace].classList.add("tileSW");
+    tileArray[randomPlace].classList.add(tileClasses.sword);
     swordsGlobal.push(tileArray[randomPlace]);
   }
   return swordsGlobal;
 }
 
-function createEnemies(tileArray) {
+function createEnemies(tileArray, tileClasses) {
   var enemiesCount = 10;
   var enemiesPlaced = [];
   var enemiesGlobal = [];
@@ -205,22 +333,22 @@ function createEnemies(tileArray) {
     if (
       enemiesPlaced.length >= enemiesCount ||
       enemiesPlaced.indexOf(randomPlace) != -1 ||
-      tileArray[randomPlace].classList.contains("tileW") ||
-      tileArray[randomPlace].classList.contains("tileE") ||
-      tileArray[randomPlace].classList.contains("tileHP") ||
-      tileArray[randomPlace].classList.contains("tileP") ||
-      tileArray[randomPlace].classList.contains("tileSW")
+      tileArray[randomPlace].classList.contains(tileClasses.wall) ||
+      tileArray[randomPlace].classList.contains(tileClasses.enemy) ||
+      tileArray[randomPlace].classList.contains(tileClasses.potion) ||
+      tileArray[randomPlace].classList.contains(tileClasses.player) ||
+      tileArray[randomPlace].classList.contains(tileClasses.sword)
     ) {
       continue;
     }
     enemiesPlaced.push(randomPlace);
-    tileArray[randomPlace].classList.add("tileE");
+    tileArray[randomPlace].classList.add(tileClasses.enemy);
     enemiesGlobal.push(tileArray[randomPlace]);
   }
   return enemiesGlobal;
 }
 
-function createPlayer(tileArray) {
+function createPlayer(tileArray, tileClasses) {
   var playerCount = 1;
   var playerPlaced = [];
 
@@ -230,31 +358,33 @@ function createPlayer(tileArray) {
     if (
       playerPlaced.length >= playerCount ||
       playerPlaced.indexOf(randomPlace) != -1 ||
-      tileArray[randomPlace].classList.contains("tileW") ||
-      tileArray[randomPlace].classList.contains("tileE") ||
-      tileArray[randomPlace].classList.contains("tileHP") ||
-      tileArray[randomPlace].classList.contains("tileP") ||
-      tileArray[randomPlace].classList.contains("tileSW")
+      tileArray[randomPlace].classList.contains(tileClasses.wall) ||
+      tileArray[randomPlace].classList.contains(tileClasses.enemy) ||
+      tileArray[randomPlace].classList.contains(tileClasses.potion) ||
+      tileArray[randomPlace].classList.contains(tileClasses.player) ||
+      tileArray[randomPlace].classList.contains(tileClasses.sword)
     ) {
       continue;
     }
     playerPlaced.push(randomPlace);
-    tileArray[randomPlace].classList.add("tileP");
+    tileArray[randomPlace].classList.add(tileClasses.player);
     return tileArray[randomPlace];
   }
 }
 
-function createField(gameField) {
+function createField(
+  gameField,
+  tileClasses,
+  widthTileQuantity,
+  heightTileQuantity
+) {
   var tileArray = [];
-  var wallTileArray = [];
-  var baseTileArray = [];
+  var wallArray = [];
+  var baseArray = [];
   var potionsGlobal = [];
   var swordsGlobal = [];
   var enemiesGlobal = [];
   var playerGlobal;
-
-  var widthTileQuantity = 40;
-  var heightTileQuantity = 24;
 
   var gameField_Width = gameField.clientWidth;
   var gameField_Height = gameField.clientHeight;
@@ -266,9 +396,9 @@ function createField(gameField) {
     for (var w = 0; w < widthTileQuantity; w++) {
       var tile = document.createElement("div");
 
-      tile.classList.add("tile");
-      tile.classList.add("tileB");
-      tile.classList.add("tileW");
+      tile.classList.add(tileClasses.tile);
+      tile.classList.add(tileClasses.base);
+      tile.classList.add(tileClasses.wall);
 
       tile.style.width = String(tile_Width) + "px";
       tile.style.height = String(tile_Height) + "px";
@@ -284,27 +414,27 @@ function createField(gameField) {
   tileArray = document.querySelectorAll(".tile");
 
   // creating rooms /////
-  createRooms(tileArray, widthTileQuantity, heightTileQuantity);
+  createRooms(tileArray, tileClasses, widthTileQuantity, heightTileQuantity);
   // creating paths /////
-  createPaths(tileArray, widthTileQuantity, heightTileQuantity);
+  createPaths(tileArray, tileClasses, widthTileQuantity, heightTileQuantity);
   // create potions /////
-  potionsGlobal = createPotions(tileArray, potionsGlobal);
+  potionsGlobal = createPotions(tileArray, tileClasses, potionsGlobal);
   // create swords /////
-  swordsGlobal = createSwords(tileArray, swordsGlobal);
+  swordsGlobal = createSwords(tileArray, tileClasses, swordsGlobal);
   // create enemies /////
-  enemiesGlobal = createEnemies(tileArray, enemiesGlobal);
+  enemiesGlobal = createEnemies(tileArray, tileClasses, enemiesGlobal);
   // create player /////
-  playerGlobal = createPlayer(tileArray, playerGlobal);
+  playerGlobal = createPlayer(tileArray, tileClasses, playerGlobal);
 
   // wall tile array /////
-  wallTileArray = document.querySelectorAll(".tileW");
+  wallArray = document.querySelectorAll(tileClasses.wall);
   // base tile array /////
-  baseTileArray = document.querySelectorAll(".tileB");
+  baseArray = document.querySelectorAll(tileClasses.base);
 
   return {
     tileArray,
-    wallTileArray,
-    baseTileArray,
+    wallArray,
+    baseArray,
     potionsGlobal,
     swordsGlobal,
     enemiesGlobal,
