@@ -4,7 +4,6 @@ function isEntityPlayer(entity) {
 
 function buildGame(tileArray, tileClasses) {
   var gd = [];
-
   for (var i = 0; i < tileArray.length; i++) {
     var tile = tileArray[i];
 

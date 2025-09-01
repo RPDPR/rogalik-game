@@ -117,4 +117,5 @@ App.Game.prototype.update = function () {
   }
 
   // enemy movement /////
+  enemyMovement(this.gameData);
 };
