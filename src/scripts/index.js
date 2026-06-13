@@ -66,7 +66,7 @@ App.Game.prototype.init = function () {
 
 App.Game.prototype.gameLoop = function () {
   var now = performance.now();
-  var fps = 30;
+  var fps = 60;
   var interval = 1000 / fps;
 
   if (!this.lastFrameTime) this.lastFrameTime = now;
