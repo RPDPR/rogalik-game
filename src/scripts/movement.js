@@ -103,8 +103,9 @@ function enemyMovement(gameData) {
   for (var i = 0; i < enemies.length; i++) {
     var newEnemyTile = enemies[i];
     var nextTile;
+    var directionCount = 0;
 
-    while (newEnemyTile === enemies[i]) {
+    while (newEnemyTile === enemies[i] && directionCount < directions.length) {
       var randomDirection =
         directions[Math.floor(Math.random() * directions.length)];
 
@@ -116,6 +117,7 @@ function enemyMovement(gameData) {
         randomDirection
       );
       newEnemyTile = moveEntity(enemies[i], nextTile, gameData);
+      directionCount++;
     }
   }
 }
